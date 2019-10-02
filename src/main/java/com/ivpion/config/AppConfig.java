@@ -1,6 +1,7 @@
 package com.ivpion.config;
 
 import org.hibernate.jpa.HibernatePersistenceProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -17,14 +18,19 @@ import java.util.Properties;
 @ComponentScan(basePackages = "com.ivpion")
 public class AppConfig {
 
+    @Autowired
+    private AppProperties properties;
+
+    public AppConfig() {
+    }
 
     @Bean
     public DriverManagerDataSource conferenceDataSource () {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName(org.postgresql.Driver.class.getName());
-        dataSource.setUrl("jdbc:postgresql://localhost:5432/test_db");
-        dataSource.setUsername("postgres");
-        dataSource.setPassword("12345");
+        dataSource.setUrl(properties.getDbUrl());
+        dataSource.setUsername(properties.getDbUser());
+        dataSource.setPassword(properties.getDbPass());
         return dataSource;
     }
     @Bean
@@ -34,8 +40,8 @@ public class AppConfig {
         emFactory.setPersistenceProviderClass(HibernatePersistenceProvider.class);
         emFactory.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
         Properties jpaProperties = new Properties();
-        jpaProperties.setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
-        jpaProperties.setProperty("hibernate.hbm2ddl.auto", "update");
+        jpaProperties.setProperty("hibernate.dialect", properties.getDbDialect());
+        jpaProperties.setProperty("hibernate.hbm2ddl.auto", properties.getJpaDdlAuto());
         emFactory.setJpaProperties(jpaProperties);
         emFactory.setPackagesToScan("com.ivpion.model");
         return emFactory;
@@ -46,4 +52,6 @@ public class AppConfig {
         transactionManager.setEntityManagerFactory(entityManagerFactory().getObject());
         return transactionManager;
     }
+
+
 }
